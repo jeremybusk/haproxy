@@ -5,6 +5,8 @@ set -e
 dnf install haproxy
 cp /etc/haproxy/haproxy.cfg /etc/haproxy/haproxy.cfg.o
 cp haproxy-simple.cfg /etc/haproxy/haproxy.cfg
+mkdir -p /etc/haproxy/pki
+cp least_sessions.lua /etc/haproxy/pki/
 mkdir /etc/haproxy/pki
 cd /etc/haproxy/pki
 openssl req -subj '/CN=example/O=Utah/C=US' -new -newkey rsa:2048 -sha256 -days 3650 -nodes -x509 -keyout server.key -out server.crt
