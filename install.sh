@@ -11,11 +11,12 @@ echo "Hello there"
 
 # if [ ! -z ${LINT} ]; then echo "Hello, world!"; fi
 
-
+echo "start"
 sudo apt remove -y --purge lxd lxd-client;
 sudo snap install lxd --stable;
 sudo lxd waitready;
 sudo lxd init --auto;
+echo "finish"
 # sudo chmod 666 /var/snap/lxd/common/lxd/unix.socket;  # avoids need for sudo on read
 sudo lxc list
 
