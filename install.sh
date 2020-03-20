@@ -9,7 +9,7 @@ IMAGE2="images:centos/8"
 echo "Hello there"
 # snap install lxd --edge
 
-if [ ! -z ${LINT} ]; then echo "Hello, world!"; fi
+# if [ ! -z ${LINT} ]; then echo "Hello, world!"; fi
 
 
 sudo apt remove -y --purge lxd lxd-client;
