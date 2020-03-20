@@ -10,6 +10,8 @@ stages:
 dist: bionic 
 
 deploy:
+  python:
+    - "3.6"
   provider: snap
   # snap: my_*.snap
   snap: lxd 
