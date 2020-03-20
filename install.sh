@@ -12,14 +12,12 @@ echo "Hello there"
 if [ ! -z ${LINT} ]; then echo "Hello, world!"; fi
 
 
-if [ ! -z ${IMAGE} ]; then   
-    sudo apt remove -y --purge lxd lxd-client;
-    sudo snap install lxd --stable;
-    sudo lxd waitready;
-    sudo lxd init --auto;
-    # sudo chmod 666 /var/snap/lxd/common/lxd/unix.socket;  # avoids need for sudo on read
-    sudo lxc list
-fi
+sudo apt remove -y --purge lxd lxd-client;
+sudo snap install lxd --stable;
+sudo lxd waitready;
+sudo lxd init --auto;
+# sudo chmod 666 /var/snap/lxd/common/lxd/unix.socket;  # avoids need for sudo on read
+sudo lxc list
 
 sudo lxc launch ${IMAGE1} ${CNAME1};
 sudo lxc exec ${CNAME1} -- sh -c "lsb_release -a || cat /etc/redhat-release";
