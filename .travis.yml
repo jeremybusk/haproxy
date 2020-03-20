@@ -1,16 +1,18 @@
 sudo: required
 dist: bionic
 language: python
-env:
- - LINT=1
- - IMAGE="ubuntu:trusty"
- - IMAGE="ubuntu:xenial"
- - IMAGE="ubuntu:bionic"
- - IMAGE="ubuntu:eoan"
- - IMAGE="images:ubuntu/focal/cloud"
- - IMAGE="images:centos/6/cloud"
- - IMAGE="images:centos/7/cloud"
- - IMAGE="images:centos/8/cloud"
+
+if: branch = fmaster
+  env:
+   - LINT=1
+   - IMAGE="ubuntu:bionic"
+if: branch = master
+  env:
+   - LINT=0
+   - IMAGE="ubuntu:xenial"
+   - CNAME="mycontainer"
+     #  - IMAGE="images:centos/8/cloud"
+     #
 script:
  - if [ ! -z ${LINT} ]; then echo "Hello, world!"; fi
 # setup dependencies here to save time on simpler test environments
@@ -19,12 +21,13 @@ script:
 # (^^ this is a throw-away CI environment, do not do this at home)
  - if [ ! -z ${IMAGE} ]; then
       sudo apt remove -y --purge lxd lxd-client;
-      sudo snap install lxd;
+      sudo snap install lxd --stable;
       sudo lxd waitready;
       sudo lxd init --auto;
       sudo chmod 666 /var/snap/lxd/common/lxd/unix.socket;
+      sudo lxc list
    fi
  - if [ ! -z ${IMAGE} ]; then
-      lxc launch ${IMAGE} mymachinecontainer;
-      lxc exec mymachinecontainer -- sh -c "lsb_release -a || cat /etc/redhat-release";
+      lxc launch ${IMAGE} ${CNAME};
+      lxc exec ${CNAME} -- sh -c "lsb_release -a || cat /etc/redhat-release";
    fi
