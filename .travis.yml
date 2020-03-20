@@ -1,66 +1,30 @@
-stages:
-  - name: deploy
-    if: branch = master
-
-python:
-  - 3.6
-
-# script: bundle exec rspec
-script: echo pre script busk
-
-jobs:
-  include:
-    - stage: deploy to staging
-      python: 3.6 
-      install: skip # bundle install is not required
-      script: ./install.sh
-    - stage: test-staging 
-      python: 3.6 
-      install: skip # bundle install is not required
-      script: ./install.sh
-    # - &test-staging
-    #   stage: test staging
-    #   rvm: 2.3
-    #   install: skip
-    #   script: ./test-staging.sh one
-    # - <<: *test-staging
-    #   script: ./test-staging.sh two
-    # - <<: *test-staging
-    #   script: ./test-staging.sh three
-
-# stages:
-#   - name: test 
-#     if: branch = dev 
-#
-
-dist: bionic 
 sudo: required
+dist: bionic
 language: python
-python:
-  - "3.6"
-
-deploy:
-  python:
-    - "3.6"
-  provider: snap
-  # snap: my_*.snap
-  snap: lxd 
-  # channel: edge
-  channel: stable 
-  skip_cleanup: true
-  script:
-    - ./install.sh 
-
-
-
-        # dist: bionic
-        # sudo: required
-        # language: python
-        # python:
-        #   - "3.6"
-        # script:
-        #   # - sudo apt-get update 
-        #   # - sudo apt-get install -y shellcheck
-        #   # - shellcheck osfiles/usr/local/sbin/sftpuseradd
-        #   - ./install.sh 
-        #   - ./ci-test.sh 
+env:
+ - LINT=1
+ - IMAGE="ubuntu:trusty"
+ - IMAGE="ubuntu:xenial"
+ - IMAGE="ubuntu:bionic"
+ - IMAGE="ubuntu:eoan"
+ - IMAGE="images:ubuntu/focal/cloud"
+ - IMAGE="images:centos/6/cloud"
+ - IMAGE="images:centos/7/cloud"
+ - IMAGE="images:centos/8/cloud"
+script:
+ - if [ ! -z ${LINT} ]; then echo "Hello, world!"; fi
+# setup dependencies here to save time on simpler test environments
+# wait for lxd socket to be ready after snap installation
+# change permissions on lxd socket to allow travis user access
+# (^^ this is a throw-away CI environment, do not do this at home)
+ - if [ ! -z ${IMAGE} ]; then
+      sudo apt remove -y --purge lxd lxd-client;
+      sudo snap install lxd;
+      sudo lxd waitready;
+      sudo lxd init --auto;
+      sudo chmod 666 /var/snap/lxd/common/lxd/unix.socket;
+   fi
+ - if [ ! -z ${IMAGE} ]; then
+      lxc launch ${IMAGE} mymachinecontainer;
+      lxc exec mymachinecontainer -- sh -c "lsb_release -a || cat /etc/redhat-release";
+   fi
