@@ -8,6 +8,10 @@ stages:
 #
 
 dist: bionic 
+sudo: required
+language: python
+python:
+  - "3.6"
 
 deploy:
   python:
