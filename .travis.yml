@@ -28,17 +28,34 @@ stages:
 #       if: branch = dev 
 #       env: FOO=dev
 
+    # jobs:
+    #   include:
+    #     - stage: "Tests"                # naming the Tests stage
+    #       name: "Unit Tests"            # names the first Tests stage job
+    #     #   script: ./unit-tests
+    #     # - script: ./integration-tests
+    #       name: "Integration Tests"     # names the second Tests stage job
+    #     - stage: deploy
+    #       name: "Deploy to GCP"
+    #       # script: ./deploy
+    #       script: ./install.sh
+
+
 jobs:
   include:
-    - stage: "Tests"                # naming the Tests stage
-      name: "Unit Tests"            # names the first Tests stage job
-    #   script: ./unit-tests
-    # - script: ./integration-tests
-      name: "Integration Tests"     # names the second Tests stage job
+    - stage: test 
+      python: 3.7
+      env:
+        - FOO=test
+      script: ./test
+      if: branch = dev 
+
     - stage: deploy
-      name: "Deploy to GCP"
-      # script: ./deploy
-      script: ./install.sh
+      python: 3.6 
+      env:
+        - FOO=deploy
+      script: ./deploy
+      if: branch = master 
 
 
 # if: branch = fmaster
