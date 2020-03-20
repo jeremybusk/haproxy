@@ -36,3 +36,5 @@ sudo lxc exec ${CNAME2} -- sh -c "ping -c 4 ${CNAME1}";
 # snap install lxd --stable
 sudo lxc list
 lxc list
+
+whoami
