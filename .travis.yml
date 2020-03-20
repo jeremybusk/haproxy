@@ -2,17 +2,56 @@ sudo: required
 dist: bionic
 language: python
 
-if: branch = fmaster
-  env:
-   - LINT=1
-   - IMAGE="ubuntu:bionic"
-if: branch = master
-  env:
-   - LINT=0
-   - IMAGE="ubuntu:xenial"
-   - CNAME="mycontainer"
-     #  - IMAGE="images:centos/8/cloud"
-     #
+# if [ ${TRAVIS_BRANCH} == "master" ]; then
+
+# stages:
+#   - name: deploy
+#     # require the branch name to be master (note for PRs this is the base branch name)
+#     if: branch = master
+stages:
+  - name: test 
+    # require the branch name to be master (note for PRs this is the base branch name)
+    if: branch = dev 
+  - name: deploy
+    # require the branch name to be master (note for PRs this is the base branch name)
+    if: branch = master
+
+# jobs:
+#   include:
+#     - # require the branch name to be master (note for PRs this is the base branch name)
+#       if: branch = master
+#       env: FOO=master
+# 
+# jobs:
+#   include:
+#     - # require the branch name to be master (note for PRs this is the base branch name)
+#       if: branch = dev 
+#       env: FOO=dev
+
+jobs:
+  include:
+    - stage: "Tests"                # naming the Tests stage
+      name: "Unit Tests"            # names the first Tests stage job
+    #   script: ./unit-tests
+    # - script: ./integration-tests
+      name: "Integration Tests"     # names the second Tests stage job
+    - stage: deploy
+      name: "Deploy to GCP"
+      # script: ./deploy
+      script: ./install.sh
+
+
+# if: branch = fmaster
+#   env:
+#    - LINT=1
+#    - IMAGE="ubuntu:bionic"
+# if: branch = master
+#   env:
+#    - LINT=0
+#    - IMAGE="ubuntu:xenial"
+#    - CNAME="mycontainer"
+#      #  - IMAGE="images:centos/8/cloud"
+#      #
 script:
  - if [ ! -z ${LINT} ]; then echo "Hello, world!"; fi
 # setup dependencies here to save time on simpler test environments
