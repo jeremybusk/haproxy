@@ -1,0 +1,34 @@
+stages:
+  - name: deploy
+    if: branch = master
+
+# stages:
+#   - name: test 
+#     if: branch = dev 
+#
+
+dist: bionic 
+
+deploy:
+  provider: snap
+  # snap: my_*.snap
+  snap: lxd 
+  # channel: edge
+  channel: stable 
+  skip_cleanup: true
+  script:
+    - ./install.sh 
+
+
+
+        # dist: bionic
+        # sudo: required
+        # language: python
+        # python:
+        #   - "3.6"
+        # script:
+        #   # - sudo apt-get update 
+        #   # - sudo apt-get install -y shellcheck
+        #   # - shellcheck osfiles/usr/local/sbin/sftpuseradd
+        #   - ./install.sh 
+        #   - ./ci-test.sh 
