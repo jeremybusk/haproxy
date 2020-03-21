@@ -86,7 +86,9 @@ sudo lxd init --auto
 
 for c in "${containers[@]}"; do
     sudo lxc launch ${image} ${c}
-    sleep 10
+    # sleep 10
+    # until ping -c1 www.google.com >/dev/null 2>&1; do :; done
+    while true; do ping -c1 www.google.com > /dev/null && break; done
     sudo lxc exec ${c} -- apt-get update
     sudo lxc exec ${c} -- apt-get install -y sshpass rsync
 done
