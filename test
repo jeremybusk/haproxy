@@ -55,6 +55,7 @@ containers[1]=hap2
 containers[2]=nginx
 for c in "${containers[@]}"; do
     sudo lxc launch ${image} ${c}
+    sudo apt-get update
     sudo apt-get install -y sshpass
 done
 
