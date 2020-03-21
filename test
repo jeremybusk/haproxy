@@ -42,12 +42,14 @@ sudo lxd init --auto
 containers[0]=hap1
 containers[1]=hap2
 containers[2]=nginx
-for ${c} in "${containers[@]}"; do
-    sudo lxc launch ${image} ${c};
+for c in "${containers[@]}"; do
+    sudo lxc launch ${image} ${c}
 done
 
 sleep 10
 # mapfile -t arr <<< "$string"
+cmds="
+"
 
 for c in "${containers[@]}"; do
     sudo lxc exec ${c} -- sh -c "lsb_release -a || cat /etc/redhat-release";
