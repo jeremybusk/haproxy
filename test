@@ -21,7 +21,7 @@ alias lxc_cmd="sudo lxc exec"
 
 
 i=0
-list="client hap1 hap2 nginx"
+list="client haproxy1 haproxy2 nginx"
 # containers[0]="${hap1}$_(uuid)"
 sudo apt-get update
 sudo apt-get install -y uuid
@@ -87,6 +87,8 @@ for c in "${containers[@]}"; do
     	        sudo lxc exec ${c} -- bash -c "ssh root@${ssh_host} systemctl restart haproxy"
 	        sudo lxc exec ${c} -- bash -c "ssh root@${ssh_host} cat /etc/keepalived/keepalived.conf | grep router"
     	        sudo lxc exec ${c} -- bash -c "ssh root@${ssh_host} systemctl restart keepalived"
+    	        sudo lxc exec ${c} -- bash -c "ssh root@${ssh_host} journalctl -n 100"
+    	        sudo lxc exec ${c} -- bash -c "ssh root@${ssh_host} ip a"
             fi
             if [[ ${c} == *"nginx"* ]]; then
                 sudo lxc exec ${c} -- bash -c "rsync ${rsync_opts} /tmp/osfiles/* root@${ssh_host}/"
