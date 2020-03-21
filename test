@@ -38,23 +38,9 @@ for c in "${containers[@]}"; do
   echo $c
 done
 
-    
 
-# containers[0]=${hap1}
-# containers[1]=${hap2}
-# containers[2]=${nginx}
-# uuid=$(uuidgen)
-#  uid=RandomStringUtils.randomAlphanumeric(8);
-# hap1="hap1_$(uuidgen)"
-# hap2="hap2_$(uuidgen)"
-# nginx="nginx_$(uuidgen)"
-
-# 
-# hap1="hap1"
-# hap2="hap2"
 image="ubuntu:bionic"
 ssh_pass="rootit"
-# CNAME2="centos"
 # image="images:centos/8"
 current_user=$(whoami)
 
@@ -67,29 +53,10 @@ sudo lxd init --auto
 # sudo chmod 666 /var/snap/lxd/common/lxd/unix.socket;  # avoids need for sudo on read
 
 
-# sudo lxc launch ${IMAGE1} ${CNAME1};
-# sudo lxc exec ${CNAME1} -- sh -c "lsb_release -a || cat /etc/redhat-release";
-# sudo lxc launch ${IMAGE2} ${CNAME2};
-# sudo lxc exec ${CNAME2} -- sh -c "lsb_release -a || cat /etc/redhat-release";
-# sudo lxc exec ${CNAME2} -- sh -c "ping -c 4 ubuntu.lxd";
-# sudo lxc exec ${CNAME2} -- sh -c "ping -c 4 ubuntu";
-# sudo lxc exec ${CNAME2} -- sh -c "ping -c 4 ${CNAME1}";
-# echo "sleep 10"
-# sleep 10
-# sudo lxc exec ${CNAME2} -- sh -c "ping -c 4 ubuntu.lxd";
-# sudo lxc exec ${CNAME2} -- sh -c "ping -c 4 ubuntu";
-# sudo lxc exec ${CNAME2} -- sh -c "ping -c 4 ${CNAME1}";
-# # snap install lxd --stable
-# sudo lxc list
-# lxc list
-
-
 for c in "${containers[@]}"; do
     sudo lxc launch ${image} ${c}
     # while true; do ping -c3 www.google.com > /dev/null && break; done
     sleep 10
-    # sudo lxc exec ${c} -- sudo apt-get update
-    # sudo lxc exec ${c} -- sudo apt-get install -y sshpass rsync
     sudo lxc exec ${c} -- bash -c "sudo apt-get update && sudo apt-get install -y sshpass rsync"
     sudo lxc exec ${c} -- bash -c "sudo echo 'root:${ssh_pass}' | chpasswd"
     # usermod --password PASSWORD USERNAME
@@ -115,54 +82,9 @@ for c in "${containers[@]}"; do
     for ssh_host in "${containers[@]}"; do
         if [ "${ssh_host}" != "${c}" ]; then
             sudo lxc exec ${c} -- ping -c 2 ${ssh_host}
-            sudo lxc exec ${c} -- bash -c "sshpass -oStrictHostKeyChecking=no -p ${ssh_pass} ssh-copy-id -o StrictHostKeyChecking=no root@${ssh_host}"
+            sudo lxc exec ${c} -- bash -c "sshpass -o StrictHostKeyChecking=no -p ${ssh_pass} ssh-copy-id -o StrictHostKeyChecking=no root@${ssh_host}"
             sudo lxc exec ${c} -- bash -c "ssh -o StrictHostKeyChecking=no root@${ssh_host} hostname"
             sudo lxc exec ${c} -- bash -c "ssh root@${ssh_host} hostname"
         fi
     done
 done
-    # sudo lxc exec ${c} -- sh -c "ssh-copy-id -i ~/.ssh/id_app user@host"
-
-# 
-# for c in "${containers[@]}"; do
-#     sudo lxc launch ${image} ${c}
-#     # until ping -c1 www.google.com >/dev/null 2>&1; do :; done
-#     # sleep 10
-#     while true; do ping -c3 www.google.com > /dev/null && break; done
-#     sudo lxc exec ${c} -- apt-get update
-#     sudo lxc exec ${c} -- apt-get install -y sshpass rsync
-#     sudo lxc exec ${c} -- bash -c "echo 'root:${ssh_pass}' | chpasswd" 
-#     # usermod --password PASSWORD USERNAME
-#     # useradd -p $(openssl passwd -1 "$pass") "$user"
-# done
-# 
-# sleep 10
-# sudo lxc list
-# 
-# # mapfile -t arr <<< "$string"
-# cmds="
-# "
-# 
-# for c in "${containers[@]}"; do
-#     # sudo lxc exec ${c} -- lsb_release -a || cat /etc/redhat-release
-#     sudo lxc exec ${c} -- lsb_release -a || cat /etc/*release
-#     sudo lxc exec ${c} -- sed -i 's/^PermitRootLogin.*/PermitRootLogin yes/' /etc/ssh/sshd_config
-#     sudo lxc exec ${c} -- systemctl restart ssh
-#     # sudo lxc exec ${c} -- bash -c "ssh-keygen -t ed25519 -N ''"
-#     sudo lxc exec ${c} -- bash -c "ssh-keygen -t ed25519 -f /root/.ssh/id_ed25519 -N ''"
-#     # sudo lxc exec ${c} -- bash -c "mkdir -m 0700 -p ~/.ssh"
-#     # sudo lxc exec ${c} -- bash -c "ssh-keygen -t ed25519 -f ${ssh_id_file} -N ''"
-#     for ssh_host in "${containers[@]}"; do
-# 	if [ "${ssh_host}" != "${c}" ]; then
-# 	    sudo lxc exec ${c} -- ping -c 2 ${ssh_host}
-#     	    # sudo lxc exec ${c} -- bash -c "sshpass -p "${ssh_pass}" ssh-copy-id -o StrictHostKeyChecking=no -i ${ssh_id_file} root@${ssh_host}"
-#     	    # sudo lxc exec ${c} -- "sshpass -p "${ssh_pass}" ssh-copy-id -o StrictHostKeyChecking=no -i ${ssh_id_file} root@${ssh_host}"
-#             # sudo lxc exec ${c} -- ssh -o StrictHostKeyChecking=no root@${ssh_host} hostname
-#     	    # sudo lxc exec ${c} -- bash -c "sshpass -p ${ssh_pass} ssh-copy-id -o StrictHostKeyChecking=no root@${ssh_host}"
-#     	    sudo lxc exec ${c} -- bash -c "sshpass -p ${ssh_pass} ssh-copy-id -o StrictHostKeyChecking=no root@${ssh_host}"
-#     	    # sudo lxc exec ${c} -- sshpass -p ${ssh_pass} ssh-copy-id -o StrictHostKeyChecking=no root@${ssh_host}
-#             # sudo lxc exec ${c} -- ssh root@${ssh_host} hostname
-#         fi
-#     done
-# done
-#     # sudo lxc exec ${c} -- sh -c "ssh-copy-id -i ~/.ssh/id_app user@host"
