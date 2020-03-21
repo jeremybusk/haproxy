@@ -2,7 +2,7 @@
 # set -exo pipefail
 set -x
 
-# image="images:centos/8"
+haproxy_image="images:centos/8"
 image="ubuntu:bionic"
 ssh_pass="rootit"
 current_user=$(whoami)
@@ -46,7 +46,11 @@ lxc profile show default
 
 
 for c in "${containers[@]}"; do
-    sudo lxc launch ${image} ${c}
+    if [[ ${c} == *"haproxy"* ]]; then
+        sudo lxc launch ${haproxy_image} ${c}
+    else
+        sudo lxc launch ${image} ${c}
+    fi
     # while true; do ping -c3 www.google.com > /dev/null && break; done
     sleep 10
     sudo lxc exec ${c} -- bash -c "sudo apt-get update"
