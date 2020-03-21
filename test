@@ -115,7 +115,7 @@ for c in "${containers[@]}"; do
     for ssh_host in "${containers[@]}"; do
         if [ "${ssh_host}" != "${c}" ]; then
             sudo lxc exec ${c} -- ping -c 2 ${ssh_host}
-            sudo lxc exec ${c} -- bash -c "sshpass -p ${ssh_pass} ssh-copy-id -o StrictHostKeyChecking=no root@${ssh_host}"
+            sudo lxc exec ${c} -- bash -c "sshpass -oStrictHostKeyChecking=no -p ${ssh_pass} ssh-copy-id -o StrictHostKeyChecking=no root@${ssh_host}"
             sudo lxc exec ${c} -- bash -c "ssh -o StrictHostKeyChecking=no root@${ssh_host} hostname"
             sudo lxc exec ${c} -- bash -c "ssh root@${ssh_host} hostname"
         fi
