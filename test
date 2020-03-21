@@ -86,6 +86,7 @@ sudo lxd init --auto
 
 for c in "${containers[@]}"; do
     sudo lxc launch ${image} ${c}
+    sleep 10
     sudo lxc exec ${c} -- apt-get update
     sudo lxc exec ${c} -- apt-get install -y sshpass rsync
 done
