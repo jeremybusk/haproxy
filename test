@@ -43,18 +43,19 @@ containers[0]=hap1
 containers[1]=hap2
 containers[2]=nginx
 for ${c} in "${containers[@]}"; do
-    sudo lxc launch ${IMAGE1} ${CNAME1};
+    sudo lxc launch ${image} ${c};
 done
 
 sleep 10
+# mapfile -t arr <<< "$string"
 
-for ${c} in "${containers[@]}"; do
-    sudo lxc exec ${CNAME1} -- sh -c "lsb_release -a || cat /etc/redhat-release";
+for c in "${containers[@]}"; do
+    sudo lxc exec ${c} -- sh -c "lsb_release -a || cat /etc/redhat-release";
     sudo lxc exec ${c} sed -i 's/^PermitRootLogin.*/PermitRootLogin yes/' /etc/ssh/sshd_config
     sudo lxc exec ${c} systemctl restart ssh 
     sudo lxc exec ${c} ssh-keygen -f ~/.ssh/id_app -N ''
     sudo lxc exec ${c} ssh-copy-id -i ~/.ssh/id_app user@host
-    for ${ssh_host} in "${containers[@]}"; do
+    for ssh_host in "${containers[@]}"; do
 	if [ "${ssh_host}" != "${c}" ]; then
 	    sudo lxc exec ${c} ping -c 2 ${ssh_host}
     	    sudo lxc exec ${c} sshpass -p ${ssh_pass} ssh-copy-id -i ~/.ssh/id_ed25519 root@${ssh_host}

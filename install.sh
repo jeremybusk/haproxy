@@ -43,7 +43,7 @@ containers[0]=hap1
 containers[1]=hap2
 containers[2]=nginx
 for ${c} in "${containers[@]}"; do
-    sudo lxc launch ${IMAGE1} ${c};
+    sudo lxc launch ${image} ${c};
 done
 
 sleep 10
