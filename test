@@ -86,8 +86,8 @@ sudo lxd init --auto
 
 for c in "${containers[@]}"; do
     sudo lxc launch ${image} ${c}
-    sudo apt-get update
-    sudo apt-get install -y sshpass rsync
+    sudo lxc exec ${c} -- apt-get update
+    sudo lxc exec ${c} -- apt-get install -y sshpass rsync
 done
 
 sleep 10
@@ -109,7 +109,7 @@ for c in "${containers[@]}"; do
 	    sudo lxc exec ${c} -- ping -c 2 ${ssh_host}
     	    # sudo lxc exec ${c} -- sshpass -p ${ssh_pass} ssh-copy-id ${ssh_opts} -i ~/.ssh/id_ed25519 root@${ssh_host}
     	    # sudo lxc exec ${c} -- sshpass -p ${ssh_pass} ssh-copy-id -o StrictHostKeyChecking=no -i ~/.ssh/id_ed25519 root@${ssh_host}
-            sudo lxc exec ${c} -- bash -c "sshpass -p ${ssh_pass} ssh -o StrictHostKeyChecking=no root@${ssh_host} hostname"
+            # sudo lxc exec ${c} -- bash -c "sshpass -p ${ssh_pass} ssh -o StrictHostKeyChecking=no root@${ssh_host} hostname"
     	    # sudo lxc exec ${c} -- sshpass -p "${ssh_pass}" ssh-copy-id -o StrictHostKeyChecking=no -i ${ssh_id_file} root@${ssh_host}
     	    sudo lxc exec ${c} -- bash -c "sshpass -p "${ssh_pass}" ssh-copy-id -o StrictHostKeyChecking=no -i ${ssh_id_file} root@${ssh_host}"
     	    # sudo lxc exec ${c} -- "sshpass -p ${ssh_pass} ssh-copy-id ${ssh_opts} -i ~/.ssh/id_ed25519 root@${ssh_host}"
