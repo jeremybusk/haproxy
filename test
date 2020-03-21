@@ -51,7 +51,7 @@ for c in "${containers[@]}"; do
         sleep 10
         sudo lxc exec ${c} -- bash -c "dnf install -y epel-release"  # needed for sshpass
         sudo lxc exec ${c} -- bash -c "dnf install -y sudo sshpass rsync openssh-server"
-        # sudo lxc exec ${c} -- bash -c "sudo systemctl enable sshd"
+        sudo lxc exec ${c} -- bash -c "sudo systemctl enable sshd"  # make sure it is enabled
         sudo lxc exec ${c} -- bash -c "sudo systemctl start sshd"
     else
         sudo lxc launch ${image} ${c}
@@ -97,7 +97,12 @@ for c in "${containers[@]}"; do
         for ssh_host in "${containers[@]}"; do
             if [[ ${ssh_host} == *"haproxy"* ]]; then
                 # sudo lxc exec ${c} -- bash -c "rsync ${rsync_opts} /tmp/osfiles/haproxy/* root@${ssh_host}/"
-    	        sudo lxc exec ${c} -- bash -c "ssh root@${ssh_host} apt-get install -y haproxy keepalived"
+    	        # sudo lxc exec ${c} -- bash -c "ssh root@${ssh_host} apt-get install -y haproxy keepalived"
+    	        sudo lxc exec ${c} -- bash -c "ssh root@${ssh_host} dnf install -y haproxy keepalived"
+    	        sudo lxc exec ${c} -- bash -c "ssh root@${ssh_host} systemctl enable haproxy"
+    	        sudo lxc exec ${c} -- bash -c "ssh root@${ssh_host} systemctl start haproxy"
+    	        sudo lxc exec ${c} -- bash -c "ssh root@${ssh_host} systemctl enable keepalived"
+    	        sudo lxc exec ${c} -- bash -c "ssh root@${ssh_host} systemctl start keepalived"
                 sudo lxc exec ${c} -- bash -c "rsync -avz /tmp/osfiles/haproxy/* root@${ssh_host}:/"
     	        sudo lxc exec ${c} -- bash -c "ssh root@${ssh_host} haproxy -c -V -f /etc/haproxy/haproxy.cfg"
     	        sudo lxc exec ${c} -- bash -c "ssh root@${ssh_host} systemctl restart haproxy"
