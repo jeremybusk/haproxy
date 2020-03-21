@@ -56,7 +56,9 @@ for c in "${containers[@]}"; do
         # while true; do ping -c3 www.google.com > /dev/null && break; done
         sleep 10
         sudo lxc exec ${c} -- bash -c "sudo apt-get update"
-        sudo lxc exec ${c} -- bash -c "sudo apt-get install -y sshpass rsync"
+        sudo lxc exec ${c} -- bash -c "sudo apt-get install -y sshpass rsync openssh-server"
+        # sudo lxc exec ${c} -- bash -c "sudo systemctl enable sshd"
+        sudo lxc exec ${c} -- bash -c "sudo systemctl start sshd"
     fi
     sudo lxc exec ${c} -- bash -c "sudo echo 'root:${ssh_pass}' | chpasswd"
     sudo lxc exec ${c} -- lsb_release -a || cat /etc/*release
@@ -65,7 +67,7 @@ for c in "${containers[@]}"; do
     # sudo lxc exec ${c} -- bash -c "sed -i 's/^#.*StrictHostKeyChecking.*/StrictHostKeyChecking no/' /etc/ssh/ssh_config"
     sudo lxc exec ${c} -- bash -c "sed -i 's/\(^#.*\|^\)PermitRootLogin.*/PermitRootLogin yes/' /etc/ssh/sshd_config"
     sudo lxc exec ${c} -- bash -c "sed -i 's/\(^#.*\|^\)PasswordAuthentication.*/PasswordAuthentication yes/' /etc/ssh/sshd_config"
-    sudo lxc exec ${c} -- bash -c "cat /etc/ssh/sshd_config"
+    # sudo lxc exec ${c} -- bash -c "cat /etc/ssh/sshd_config"
     # sudo lxc exec ${c} -- bash -c "echo 'PasswordAuthentication yes' >> /etc/ssh/sshd_config"
     # sudo lxc exec ${c} -- bash -c "echo 'PermitRootLogin yes' >> /etc/ssh/sshd_config"
     # sudo lxc exec ${c} -- bash -c "echo 'StrictHostKeyChecking no' i>> /etc/ssh/ssh_config"
