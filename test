@@ -49,6 +49,7 @@ for c in "${containers[@]}"; do
     if [[ ${c} == *"haproxy"* ]]; then
         sudo lxc launch ${haproxy_image} ${c}
         sleep 10
+        sudo lxc exec ${c} -- bash -c "dnf install -y epel-release"  # needed for sshpass
         sudo lxc exec ${c} -- bash -c "dnf install -y sudo sshpass rsync"
     else
         sudo lxc launch ${image} ${c}
