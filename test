@@ -57,8 +57,6 @@ sudo apt remove -y --purge lxd lxd-client;
 sudo snap install lxd --stable  # --edge
 sudo lxd waitready
 sudo lxd init --auto
-sleep 10
-sudo lxc list
 
 # sudo usermod --append --groups lxd "${current_user}"
 # sudo chmod 666 /var/snap/lxd/common/lxd/unix.socket;  # avoids need for sudo on read
@@ -88,6 +86,8 @@ for c in "${containers[@]}"; do
 done
 
 sleep 10
+sudo lxc list
+
 # mapfile -t arr <<< "$string"
 cmds="
 "
