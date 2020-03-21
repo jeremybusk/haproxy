@@ -21,6 +21,7 @@ list="hap1 hap2 nginx"
 # nginx
 # "
 
+# mapfile -t arr <<< "$string"
 # for c in "hap1, hap2, nginx"; do
 sudo apt-get update
 sudo apt-get install -y uuid
@@ -103,7 +104,8 @@ for c in "${containers[@]}"; do
     for ssh_host in "${containers[@]}"; do
 	if [ "${ssh_host}" != "${c}" ]; then
 	    sudo lxc exec ${c} -- ping -c 2 ${ssh_host}
-    	    sudo lxc exec ${c} -- "sshpass -p ${ssh_pass} ssh-copy-id ${ssh_opts} -i ~/.ssh/id_ed25519 root@${ssh_host}"
+    	    sudo lxc exec ${c} -- sshpass -p ${ssh_pass} ssh-copy-id ${ssh_opts} -i ~/.ssh/id_ed25519 root@${ssh_host}
+    	    # sudo lxc exec ${c} -- "sshpass -p ${ssh_pass} ssh-copy-id ${ssh_opts} -i ~/.ssh/id_ed25519 root@${ssh_host}"
             sudo lxc exec ${c} -- ssh root@${ssh_host} hostname
         fi
     done
