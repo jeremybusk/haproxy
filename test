@@ -81,6 +81,7 @@ for c in "${containers[@]}"; do
     if [[ ${c} == *"client"* ]]; then
         sudo lxc file push -r osfiles ${c}/tmp/
         sudo lxc exec ${c} -- bash -c "ls -lat /tmp/"
+	sudo apt-get install -y curl
         for ssh_host in "${containers[@]}"; do
             if [[ ${ssh_host} == *"haproxy"* ]]; then
                 # sudo lxc exec ${c} -- bash -c "rsync ${rsync_opts} /tmp/osfiles/* root@${ssh_host}/"
@@ -91,6 +92,7 @@ for c in "${containers[@]}"; do
 	        sudo lxc exec ${c} -- bash -c "ssh root@${ssh_host} cat /etc/keepalived/keepalived.conf | grep router"
     	        sudo lxc exec ${c} -- bash -c "ssh root@${ssh_host} systemctl restart keepalived"
     	        sudo lxc exec ${c} -- bash -c "ssh root@${ssh_host} journalctl -n 100"
+		sleep 20
     	        sudo lxc exec ${c} -- bash -c "ssh root@${ssh_host} ip a"
     	        sudo lxc exec ${c} -- bash -c "ssh root@${ssh_host} ss -lnt"
             fi
