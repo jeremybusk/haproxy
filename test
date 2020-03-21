@@ -63,11 +63,11 @@ for c in "${containers[@]}"; do
     sudo lxc exec ${c} -- bash -c "sudo apt-get update && sudo apt-get install -y sshpass rsync"
     sudo lxc exec ${c} -- bash -c "sudo echo 'root:${ssh_pass}' | chpasswd"
     sudo lxc exec ${c} -- lsb_release -a || cat /etc/*release
-    sudo lxc exec ${c} -- bash -c "sed -i 's/^#.*PermitRootLogin.*/PermitRootLogin yes/' /etc/ssh/sshd_config"
-    sudo lxc exec ${c} -- bash -c "sed -i 's/^#.*StrictHostKeyChecking.*/StrictHostKeyChecking no/' /etc/ssh/sshd_config"
+    # sudo lxc exec ${c} -- bash -c "sed -i 's/^#.*PermitRootLogin.*/PermitRootLogin yes/' /etc/ssh/sshd_config"
+    # sudo lxc exec ${c} -- bash -c "sed -i 's/^#.*StrictHostKeyChecking.*/StrictHostKeyChecking no/' /etc/ssh/sshd_config"
     sudo lxc exec ${c} -- bash -c "echo 'PasswordAuthentication yes' > /etc/ssh/sshd_config"
     sudo lxc exec ${c} -- bash -c "echo 'PermitRootLogin yes' > /etc/ssh/sshd_config"
-    sudo lxc exec ${c} -- bash -c "echo 'StrictHostKeyChecking no' > /etc/ssh/ssh_config"
+    # sudo lxc exec ${c} -- bash -c "echo 'StrictHostKeyChecking no' > /etc/ssh/ssh_config"
     sudo lxc exec ${c} -- bash -c "systemctl restart ssh"
     sudo lxc exec ${c} -- bash -c "ssh-keygen -t ed25519 -f /root/.ssh/id_ed25519 -N ''"
     sudo lxc exec ${c} -- bash -c "ls -laht ~/.ssh/"
@@ -92,15 +92,14 @@ for c in "${containers[@]}"; do
             sudo lxc exec ${c} -- ping -c 2 ${ssh_host}
             # sudo lxc exec ${c} -- bash -c "sshpass -p ${ssh_pass} ssh -v -o StrictHostKeyChecking=no root@${ssh_host} hostname"
             # sudo lxc exec ${c} -- bash -c "script -qc sshpass -p ${ssh_pass} -e ssh -v -o StrictHostKeyChecking=no root@${ssh_host} hostname"
-            sudo lxc exec ${c} -- bash -c "sshpass -p ${ssh_pass} ssh -v -oStrictHostKeyChecking=no root@${ssh_host} hostname"
+            sudo lxc exec ${c} -- bash -c "sshpass -p ${ssh_pass} ssh -oStrictHostKeyChecking=no root@${ssh_host} hostname"
+	    echo "one"
+           #  sudo lxc exec ${c} -- bash -c "sshpass -p ${ssh_pass} ssh -v -o StrictHostKeyChecking=no root@${ssh_host} hostname" /dev/null
+            # sudo lxc exec ${c} -- bash -c "ssh root@${ssh_host} hostname"
+	    # exit 1
+            # sudo lxc exec ${c} -- bash -c "sshpass -p ${ssh_pass} ssh -v -o StrictHostKeyChecking=no root@${ssh_host} hostname"
 	    echo "two"
-	    exit
-            sudo lxc exec ${c} -- script -qc "sshpass -p ${ssh_pass} ssh -v -o StrictHostKeyChecking=no root@${ssh_host} hostname" /dev/null
-            sudo lxc exec ${c} -- bash -c "ssh root@${ssh_host} hostname"
-	    exit 1
-            sudo lxc exec ${c} -- bash -c "sshpass -p ${ssh_pass} ssh -v -o StrictHostKeyChecking=no root@${ssh_host} hostname"
-	    echo "================NEW==============="
-            sudo lxc exec ${c} -- bash -c "sshpass -p ${ssh_pass} ssh-copy-id -o StrictHostKeyChecking=no root@${ssh_host}"
+            sudo lxc exec ${c} -- bash -c "sshpass -p ${ssh_pass} ssh-copy-id -oStrictHostKeyChecking=no root@${ssh_host}"
 	    sleep 10
 	    # script -qc 
             sudo lxc exec ${c} -- bash -c "ssh -o StrictHostKeyChecking=no root@${ssh_host} hostname"
