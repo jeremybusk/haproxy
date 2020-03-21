@@ -56,9 +56,12 @@ for c in "${containers[@]}"; do
     # sudo lxc exec ${c} -- bash -c "sed -i 's/^#.*PermitRootLogin.*/PermitRootLogin yes/' /etc/ssh/sshd_config"
     # sudo lxc exec ${c} -- bash -c "sed -i 's/^#.*PasswordAuthentication.*/PasswordAuthentication yes/' /etc/ssh/sshd_config"
     # sudo lxc exec ${c} -- bash -c "sed -i 's/^#.*StrictHostKeyChecking.*/StrictHostKeyChecking no/' /etc/ssh/ssh_config"
-    sudo lxc exec ${c} -- bash -c "echo 'PasswordAuthentication yes' > /etc/ssh/sshd_config"
-    sudo lxc exec ${c} -- bash -c "echo 'PermitRootLogin yes' > /etc/ssh/sshd_config"
-    # sudo lxc exec ${c} -- bash -c "echo 'StrictHostKeyChecking no' > /etc/ssh/ssh_config"
+    sudo lxc exec ${c} -- bash -c "sed 's/\(^#.*\|^\)PermitRootLogin.*/PermitRootLogin yes/' /etc/ssh/sshd_config"
+    sudo lxc exec ${c} -- bash -c "sed 's/\(^#.*\|^\)PasswordAuthentication.*/PasswordAuthentication yes/' /etc/ssh/sshd_config"
+    sudo lxc exec ${c} -- bash -c "cat /etc/ssh/sshd_config"
+    # sudo lxc exec ${c} -- bash -c "echo 'PasswordAuthentication yes' >> /etc/ssh/sshd_config"
+    # sudo lxc exec ${c} -- bash -c "echo 'PermitRootLogin yes' >> /etc/ssh/sshd_config"
+    # sudo lxc exec ${c} -- bash -c "echo 'StrictHostKeyChecking no' i>> /etc/ssh/ssh_config"
     sudo lxc exec ${c} -- bash -c "systemctl restart ssh"
     sudo lxc exec ${c} -- bash -c "ssh-keygen -t ed25519 -f /root/.ssh/id_ed25519 -N ''"
 done
@@ -80,22 +83,23 @@ done
 for c in "${containers[@]}"; do
     if [[ ${c} == *"client"* ]]; then
         sudo lxc file push -r osfiles ${c}/tmp/
-        sudo lxc exec ${c} -- bash -c "ls -lat /tmp/osfiles/"
+        # sudo lxc exec ${c} -- bash -c "ls -lat /tmp/osfiles/"
 	sudo apt-get install -y curl
         for ssh_host in "${containers[@]}"; do
             if [[ ${ssh_host} == *"haproxy"* ]]; then
-                # sudo lxc exec ${c} -- bash -c "rsync ${rsync_opts} /tmp/osfiles/* root@${ssh_host}/"
-    	        sudo lxc exec ${c} -- bash -c "ssh root@${ssh_host} apt-get install -y haproxy keepalived"
                 # sudo lxc exec ${c} -- bash -c "rsync ${rsync_opts} /tmp/osfiles/haproxy/* root@${ssh_host}/"
+    	        sudo lxc exec ${c} -- bash -c "ssh root@${ssh_host} apt-get install -y haproxy keepalived"
                 sudo lxc exec ${c} -- bash -c "rsync -avz /tmp/osfiles/haproxy/* root@${ssh_host}:/"
     	        sudo lxc exec ${c} -- bash -c "ssh root@${ssh_host} haproxy -c -V -f /etc/haproxy/haproxy.cfg"
     	        sudo lxc exec ${c} -- bash -c "ssh root@${ssh_host} systemctl restart haproxy"
+		sleep 4
 	        sudo lxc exec ${c} -- bash -c "ssh root@${ssh_host} cat /etc/keepalived/keepalived.conf | grep router"
     	        sudo lxc exec ${c} -- bash -c "ssh root@${ssh_host} systemctl restart keepalived"
 		sleep 20
-    	        sudo lxc exec ${c} -- bash -c "ssh root@${ssh_host} journalctl -n 100 -u haproxy"
-    	        sudo lxc exec ${c} -- bash -c "ssh root@${ssh_host} journalctl -n 100 -u keepalived"
-    	        sudo lxc exec ${c} -- bash -c "ssh root@${ssh_host} ip a"
+    	        sudo lxc exec ${c} -- bash -c "ssh root@${ssh_host} journalctl -n 1000 -u haproxy"
+    	        sudo lxc exec ${c} -- bash -c "ssh root@${ssh_host} journalctl -n 1000 -u keepalived"
+    	        sudo lxc exec ${c} -- bash -c "ssh root@${ssh_host} ip maddr show"
+    	        sudo lxc exec ${c} -- bash -c "ssh root@${ssh_host} ip addr show"
     	        sudo lxc exec ${c} -- bash -c "ssh root@${ssh_host} ss -lnt"
             fi
             if [[ ${ssh_host} == *"nginx"* ]]; then
@@ -103,6 +107,7 @@ for c in "${containers[@]}"; do
                 sudo lxc exec ${c} -- bash -c "rsync ${rsync_opts} /tmp/osfiles/nginx/* root@${ssh_host}/"
     	        sudo lxc exec ${c} -- bash -c "ssh root@${ssh_host} systemctl restart nginx"
     	        sudo lxc exec ${c} -- bash -c "ssh root@${ssh_host} ss -lnt"
+    	        sudo lxc exec ${c} -- bash -c "curl -v ${ssh_host}"
             fi
         done
     fi
