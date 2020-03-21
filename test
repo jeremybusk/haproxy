@@ -51,14 +51,14 @@ for c in "${containers[@]}"; do
         sleep 10
         sudo lxc exec ${c} -- bash -c "dnf install -y epel-release"  # needed for sshpass
         sudo lxc exec ${c} -- bash -c "dnf install -y sudo sshpass rsync"
+        # sudo lxc exec ${c} -- bash -c "sudo systemctl enable sshd"
+        sudo lxc exec ${c} -- bash -c "sudo systemctl start sshd"
     else
         sudo lxc launch ${image} ${c}
         # while true; do ping -c3 www.google.com > /dev/null && break; done
         sleep 10
         sudo lxc exec ${c} -- bash -c "sudo apt-get update"
         sudo lxc exec ${c} -- bash -c "sudo apt-get install -y sshpass rsync openssh-server"
-        # sudo lxc exec ${c} -- bash -c "sudo systemctl enable sshd"
-        sudo lxc exec ${c} -- bash -c "sudo systemctl start sshd"
     fi
     sudo lxc exec ${c} -- bash -c "sudo echo 'root:${ssh_pass}' | chpasswd"
     sudo lxc exec ${c} -- lsb_release -a || cat /etc/*release
@@ -71,7 +71,7 @@ for c in "${containers[@]}"; do
     # sudo lxc exec ${c} -- bash -c "echo 'PasswordAuthentication yes' >> /etc/ssh/sshd_config"
     # sudo lxc exec ${c} -- bash -c "echo 'PermitRootLogin yes' >> /etc/ssh/sshd_config"
     # sudo lxc exec ${c} -- bash -c "echo 'StrictHostKeyChecking no' i>> /etc/ssh/ssh_config"
-    sudo lxc exec ${c} -- bash -c "systemctl restart ssh"
+    sudo lxc exec ${c} -- bash -c "systemctl restart sshd"
     sudo lxc exec ${c} -- bash -c "ssh-keygen -t ed25519 -f /root/.ssh/id_ed25519 -N ''"
 done
 
