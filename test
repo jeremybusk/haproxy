@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# set -exo pipefail
+set -exo pipefail
 # set -x
 
 ssh_opts="-o StrictHostKeyChecking=no \
@@ -104,7 +104,8 @@ for c in "${containers[@]}"; do
     for ssh_host in "${containers[@]}"; do
 	if [ "${ssh_host}" != "${c}" ]; then
 	    sudo lxc exec ${c} -- ping -c 2 ${ssh_host}
-    	    sudo lxc exec ${c} -- sshpass -p ${ssh_pass} ssh-copy-id ${ssh_opts} -i ~/.ssh/id_ed25519 root@${ssh_host}
+    	    # sudo lxc exec ${c} -- sshpass -p ${ssh_pass} ssh-copy-id ${ssh_opts} -i ~/.ssh/id_ed25519 root@${ssh_host}
+    	    sudo lxc exec ${c} -- sshpass -p ${ssh_pass} ssh-copy-id -o StrictHostKeyChecking=no -i ~/.ssh/id_ed25519 root@${ssh_host}
     	    # sudo lxc exec ${c} -- "sshpass -p ${ssh_pass} ssh-copy-id ${ssh_opts} -i ~/.ssh/id_ed25519 root@${ssh_host}"
             sudo lxc exec ${c} -- ssh root@${ssh_host} hostname
         fi
