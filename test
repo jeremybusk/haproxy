@@ -91,6 +91,7 @@ for c in "${containers[@]}"; do
     while true; do ping -c3 www.google.com > /dev/null && break; done
     sudo lxc exec ${c} -- apt-get update
     sudo lxc exec ${c} -- apt-get install -y sshpass rsync
+    sudo lxc exec ${c} -- bash -c "echo 'root:${ssh_pass}' | chpasswd" 
 done
 
 sleep 10
