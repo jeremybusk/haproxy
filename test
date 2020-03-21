@@ -52,9 +52,9 @@ sudo lxd init --auto
 # lxc list
 
 
-containers[0]=hap1
-containers[1]=hap2
-containers[2]=nginx
+containers[0]=${hap1}
+containers[1]=${hap2}
+containers[2]=${nginx}
 for c in "${containers[@]}"; do
     sudo lxc launch ${image} ${c}
     sudo apt-get update
@@ -69,12 +69,12 @@ cmds="
 for c in "${containers[@]}"; do
     sudo lxc exec ${c} -- lsb_release -a || cat /etc/redhat-release
     sudo lxc exec ${c} -- sed -i 's/^PermitRootLogin.*/PermitRootLogin yes/' /etc/ssh/sshd_config
-    sudo lxc exec ${c} -- systemctl restart ssh
+    sudo lxcrexec ${c} -- systemctl restart ssh
     sudo lxc exec ${c} -- ssh-keygen -f ~/.ssh/id_app -N ''
     for ssh_host in "${containers[@]}"; do
 	if [ "${ssh_host}" != "${c}" ]; then
 	    sudo lxc exec ${c} -- ping -c 2 ${ssh_host}
-    	    sudo lxc exec ${c} -- sshpass -p ${ssh_pass} ssh-copy-id -i ~/.ssh/id_ed25519 root@${ssh_host}
+    	    sudo lxc exec ${c} -- "sshpass -p ${ssh_pass} ssh-copy-id ${ssh_opts} -i ~/.ssh/id_ed25519 root@${ssh_host}"
             sudo lxc exec ${c} -- ssh root@${ssh_host} hostname
         fi
     done
