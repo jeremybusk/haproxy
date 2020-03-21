@@ -100,6 +100,7 @@ for c in "${containers[@]}"; do
     sudo lxc exec ${c} -- lsb_release -a || cat /etc/*release
     sudo lxc exec ${c} -- sed -i 's/^PermitRootLogin.*/PermitRootLogin yes/' /etc/ssh/sshd_config
     sudo lxc exec ${c} -- systemctl restart ssh
+    sudo lxc exec ${c} -- mkdir -p ~/.ssh 
     sudo lxc exec ${c} -- ssh-keygen -f ~/.ssh/id_app -N ''
     for ssh_host in "${containers[@]}"; do
 	if [ "${ssh_host}" != "${c}" ]; then
