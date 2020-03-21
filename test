@@ -53,11 +53,11 @@ for c in "${containers[@]}"; do
     sudo lxc exec ${c} -- bash -c "sudo apt-get install -y sshpass rsync haproxy keepalived"
     sudo lxc exec ${c} -- bash -c "sudo echo 'root:${ssh_pass}' | chpasswd"
     sudo lxc exec ${c} -- lsb_release -a || cat /etc/*release
-    sudo lxc exec ${c} -- bash -c "sed -i 's/^#.*PermitRootLogin.*/PermitRootLogin yes/' /etc/ssh/sshd_config"
-    sudo lxc exec ${c} -- bash -c "sed -i 's/^#.*PasswordAuthentication.*/PasswordAuthentication yes/' /etc/ssh/sshd_config"
+    # sudo lxc exec ${c} -- bash -c "sed -i 's/^#.*PermitRootLogin.*/PermitRootLogin yes/' /etc/ssh/sshd_config"
+    # sudo lxc exec ${c} -- bash -c "sed -i 's/^#.*PasswordAuthentication.*/PasswordAuthentication yes/' /etc/ssh/sshd_config"
     # sudo lxc exec ${c} -- bash -c "sed -i 's/^#.*StrictHostKeyChecking.*/StrictHostKeyChecking no/' /etc/ssh/ssh_config"
-    # sudo lxc exec ${c} -- bash -c "echo 'PasswordAuthentication yes' > /etc/ssh/sshd_config"
-    # sudo lxc exec ${c} -- bash -c "echo 'PermitRootLogin yes' > /etc/ssh/sshd_config"
+    sudo lxc exec ${c} -- bash -c "echo 'PasswordAuthentication yes' > /etc/ssh/sshd_config"
+    sudo lxc exec ${c} -- bash -c "echo 'PermitRootLogin yes' > /etc/ssh/sshd_config"
     # sudo lxc exec ${c} -- bash -c "echo 'StrictHostKeyChecking no' > /etc/ssh/ssh_config"
     sudo lxc exec ${c} -- bash -c "systemctl restart ssh"
     sudo lxc exec ${c} -- bash -c "ssh-keygen -t ed25519 -f /root/.ssh/id_ed25519 -N ''"
@@ -87,6 +87,11 @@ for c in "${containers[@]}"; do
     	        sudo lxc exec ${c} -- bash -c "ssh root@${ssh_host} systemctl restart haproxy"
 	        sudo lxc exec ${c} -- bash -c "ssh root@${ssh_host} cat /etc/keepalived/keepalived.conf | grep router"
     	        sudo lxc exec ${c} -- bash -c "ssh root@${ssh_host} systemctl restart keepalived"
+            fi
+            if [[ ${c} == *"nginx"* ]]; then
+                sudo lxc exec ${c} -- bash -c "rsync ${rsync_opts} /tmp/osfiles/* root@${ssh_host}/"
+    	        sudo lxc exec ${c} -- bash -c "ssh root@${ssh_host} systemctl restart nginx"
+    	        sudo lxc exec ${c} -- bash -c "ssh root@${ssh_host} eepalived"
             fi
         done
     fi
