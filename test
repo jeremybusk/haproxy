@@ -113,7 +113,7 @@ for c in "${containers[@]}"; do
             fi
             if [[ ${ssh_host} == *"nginx"* ]]; then
     	        sudo lxc exec ${c} -- bash -c "ssh root@${ssh_host} apt-get install -y nginx"
-                sudo lxc exec ${c} -- bash -c "rsync ${rsync_opts} /tmp/osfiles/nginx/* root@${ssh_host}/"
+                sudo lxc exec ${c} -- bash -c "rsync ${rsync_opts} /tmp/osfiles/nginx/* root@${ssh_host}:/"
     	        sudo lxc exec ${c} -- bash -c "ssh root@${ssh_host} systemctl restart nginx"
     	        sudo lxc exec ${c} -- bash -c "ssh root@${ssh_host} ss -lnt"
     	        sudo lxc exec ${c} -- bash -c "curl -v ${ssh_host}"
