@@ -2,8 +2,12 @@
 # set -exo pipefail
 set -x
 
-ssh_id_file="~/.ssh/id_app"
+# image="images:centos/8"
+image="ubuntu:bionic"
+ssh_pass="rootit"
+current_user=$(whoami)
 
+# ssh_id_file="~/.ssh/id_app"
 ssh_opts="-o StrictHostKeyChecking=no \
     -o UserKnownHostsFile=/dev/null \
     -o ConnectionAttempts=10"
@@ -12,11 +16,88 @@ alias ssh="${ssh_cmd}"
 alias ssh-copy-id="ssh-copy-id ${ssh_opts}"
 alias scp="scp ${ssh_opts}"
 alias rsync="rsync -avz --rsync-path=\"sudo rsync\" -e \"${ssh_cmd}\""
+rsync_opts=-"-avz --rsync-path=\"sudo rsync\" -e \"${ssh_cmd}\""
 alias lxc_cmd="sudo lxc exec"
 
 
 i=0
-list="hap1 hap2 nginx"
+list="client hap1 hap2 nginx"
+# containers[0]="${hap1}$_(uuid)"
+sudo apt-get update
+sudo apt-get install -y uuid
+for c in $list; do
+    uid=$(uuid | cut -d'-' -f1)
+    containers[${i}]="${c}-${uid}"
+    i=$((i+1))
+done
+echo "Containers to create."
+for c in "${containers[@]}"; do
+  echo $c
+done
+
+
+sudo apt remove -y --purge lxd lxd-client;
+sudo snap install lxd --stable  # --edge
+sudo lxd waitready
+sudo lxd init --auto
+lxc profile show default
+# sudo usermod --append --groups lxd "${current_user}"  # Add user to lxd (basically root)
+# sudo chmod 666 /var/snap/lxd/common/lxd/unix.socket  # Avoids need for sudo on read
+
+
+for c in "${containers[@]}"; do
+    sudo lxc launch ${image} ${c}
+    # while true; do ping -c3 www.google.com > /dev/null && break; done
+    sleep 10
+    sudo lxc exec ${c} -- bash -c "sudo apt-get update"
+    sudo lxc exec ${c} -- bash -c "sudo apt-get install -y sshpass rsync haproxy keepalived"
+    sudo lxc exec ${c} -- bash -c "sudo echo 'root:${ssh_pass}' | chpasswd"
+    sudo lxc exec ${c} -- lsb_release -a || cat /etc/*release
+    sudo lxc exec ${c} -- bash -c "sed -i 's/^#.*PermitRootLogin.*/PermitRootLogin yes/' /etc/ssh/sshd_config"
+    sudo lxc exec ${c} -- bash -c "sed -i 's/^#.*PasswordAuthentication.*/PasswordAuthentication yes/' /etc/ssh/sshd_config"
+    # sudo lxc exec ${c} -- bash -c "sed -i 's/^#.*StrictHostKeyChecking.*/StrictHostKeyChecking no/' /etc/ssh/ssh_config"
+    # sudo lxc exec ${c} -- bash -c "echo 'PasswordAuthentication yes' > /etc/ssh/sshd_config"
+    # sudo lxc exec ${c} -- bash -c "echo 'PermitRootLogin yes' > /etc/ssh/sshd_config"
+    # sudo lxc exec ${c} -- bash -c "echo 'StrictHostKeyChecking no' > /etc/ssh/ssh_config"
+    sudo lxc exec ${c} -- bash -c "systemctl restart ssh"
+    sudo lxc exec ${c} -- bash -c "ssh-keygen -t ed25519 -f /root/.ssh/id_ed25519 -N ''"
+done
+
+sleep 10
+sudo lxc list
+
+for c in "${containers[@]}"; do
+    for ssh_host in "${containers[@]}"; do
+        if [ "${ssh_host}" != "${c}" ]; then
+            sudo lxc exec ${c} -- ping -c 2 ${ssh_host}
+            sudo lxc exec ${c} -- bash -c "sshpass -p ${ssh_pass} ssh-copy-id -oStrictHostKeyChecking=no root@${ssh_host}"
+            sudo lxc exec ${c} -- bash -c "ssh root@${ssh_host} hostname"
+        fi
+    done
+done
+
+
+for c in "${containers[@]}"; do
+    if [[ ${c} == *"client"* ]]; then
+        sudo lxc file push -r osfiles ${c}/tmp/
+        sudo lxc exec ${c} -- bash -c "ls -lat /tmp/"
+        for ssh_host in "${containers[@]}"; do
+            if [[ ${c} == *"haproxy"* ]]; then
+                sudo lxc exec ${c} -- bash -c "rsync ${rsync_opts} /tmp/osfiles/* root@${ssh_host}/"
+    	        sudo lxc exec ${c} -- bash -c "ssh root@${ssh_host} systemctl restart haproxy"
+	        sudo lxc exec ${c} -- bash -c "ssh root@${ssh_host} cat /etc/keepalived/keepalived.conf | grep router"
+    	        sudo lxc exec ${c} -- bash -c "ssh root@${ssh_host} systemctl restart keepalived"
+            fi
+        done
+    fi
+done
+
+
+
+
+
+
+# TRASH
 # list="
 # hap1
 # hap2
@@ -25,88 +106,14 @@ list="hap1 hap2 nginx"
 
 # mapfile -t arr <<< "$string"
 # for c in "hap1, hap2, nginx"; do
-sudo apt-get update
-sudo apt-get install -y uuid
-for c in $list; do
-    uid=$(uuid | cut -d'-' -f1)
-    containers[${i}]="${c}-${uid}"
-    i=$((i+1))
-done
-
-echo "Containers to create"
-for c in "${containers[@]}"; do
-  echo $c
-done
-
-
-image="ubuntu:bionic"
-ssh_pass="rootit"
-# image="images:centos/8"
-current_user=$(whoami)
-
-sudo apt remove -y --purge lxd lxd-client;
-sudo snap install lxd --stable  # --edge
-sudo lxd waitready
-sudo lxd init --auto
-lxc profile show default
 # lxc profile show default > /tmp/lxd-default-profile.yml
-
-
-# sudo usermod --append --groups lxd "${current_user}"
-# sudo chmod 666 /var/snap/lxd/common/lxd/unix.socket;  # avoids need for sudo on read
-
-
-for c in "${containers[@]}"; do
-    sudo lxc launch ${image} ${c}
-    # while true; do ping -c3 www.google.com > /dev/null && break; done
-    sleep 10
-    sudo lxc exec ${c} -- bash -c "sudo apt-get update && sudo apt-get install -y sshpass rsync"
-    sudo lxc exec ${c} -- bash -c "sudo echo 'root:${ssh_pass}' | chpasswd"
-    sudo lxc exec ${c} -- lsb_release -a || cat /etc/*release
-    # sudo lxc exec ${c} -- bash -c "sed -i 's/^#.*PermitRootLogin.*/PermitRootLogin yes/' /etc/ssh/sshd_config"
-    # sudo lxc exec ${c} -- bash -c "sed -i 's/^#.*StrictHostKeyChecking.*/StrictHostKeyChecking no/' /etc/ssh/sshd_config"
-    sudo lxc exec ${c} -- bash -c "echo 'PasswordAuthentication yes' > /etc/ssh/sshd_config"
-    sudo lxc exec ${c} -- bash -c "echo 'PermitRootLogin yes' > /etc/ssh/sshd_config"
-    # sudo lxc exec ${c} -- bash -c "echo 'StrictHostKeyChecking no' > /etc/ssh/ssh_config"
-    sudo lxc exec ${c} -- bash -c "systemctl restart ssh"
-    sudo lxc exec ${c} -- bash -c "ssh-keygen -t ed25519 -f /root/.ssh/id_ed25519 -N ''"
-    sudo lxc exec ${c} -- bash -c "ls -laht ~/.ssh/"
     # sudo lxc exec ${c} -- lsb_release -a || cat /etc/redhat-release
     # sudo lxc exec ${c} -- bash -c "ssh-keygen -t ed25519 -N ''"
     # sudo lxc exec ${c} -- bash -c "mkdir -m 0700 -p ~/.ssh"
     # sudo lxc exec ${c} -- bash -c "ssh-keygen -t ed25519 -f ${ssh_id_file} -N ''"
     # usermod --password PASSWORD USERNAME
     # useradd -p $(openssl passwd -1 "$pass") "$user"
-done
 
-sleep 10
-sudo lxc list
-
-# mapfile -t arr <<< "$string"
-cmds="
-"
-
-for c in "${containers[@]}"; do
-    for ssh_host in "${containers[@]}"; do
-        if [ "${ssh_host}" != "${c}" ]; then
-            sudo lxc exec ${c} -- ping -c 2 ${ssh_host}
-            # sudo lxc exec ${c} -- bash -c "sshpass -p ${ssh_pass} ssh -v -o StrictHostKeyChecking=no root@${ssh_host} hostname"
-            # sudo lxc exec ${c} -- bash -c "script -qc sshpass -p ${ssh_pass} -e ssh -v -o StrictHostKeyChecking=no root@${ssh_host} hostname"
-            sudo lxc exec ${c} -- bash -c "sshpass -p ${ssh_pass} ssh -oStrictHostKeyChecking=no root@${ssh_host} hostname"
-	    echo "one"
-           #  sudo lxc exec ${c} -- bash -c "sshpass -p ${ssh_pass} ssh -v -o StrictHostKeyChecking=no root@${ssh_host} hostname" /dev/null
-            # sudo lxc exec ${c} -- bash -c "ssh root@${ssh_host} hostname"
-	    # exit 1
-            # sudo lxc exec ${c} -- bash -c "sshpass -p ${ssh_pass} ssh -v -o StrictHostKeyChecking=no root@${ssh_host} hostname"
-	    echo "two"
-            sudo lxc exec ${c} -- bash -c "sshpass -p ${ssh_pass} ssh-copy-id -oStrictHostKeyChecking=no root@${ssh_host}"
-	    sleep 10
-	    # script -qc 
-            sudo lxc exec ${c} -- bash -c "ssh -o StrictHostKeyChecking=no root@${ssh_host} hostname"
-            sudo lxc exec ${c} -- bash -c "ssh root@${ssh_host} hostname"
-        fi
-    done
-done
 # lxc profile edit default < lxd-profile-default.yaml
 # sshpass -p 'rootit' ssh -oStrictHostKeyChecking=no root@10.64.4.191 "hostname"
 # lxc exec busk -- bash -c "sshpass -p 'rootit' ssh -oStrictHostKeyChecking=no root@10.64.4.191 "hostname""
