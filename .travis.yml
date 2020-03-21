@@ -88,4 +88,3 @@ jobs:
 #       lxc exec ${CNAME} -- sh -c "lsb_release -a || cat /etc/redhat-release";
 #    fi
 #
-test
