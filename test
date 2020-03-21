@@ -1,6 +1,17 @@
 #!/usr/bin/env bash
 # set -exo pipefail
 set -x
+
+ssh_opts="-o StrictHostKeyChecking=no \
+    -o UserKnownHostsFile=/dev/null \
+    -o ConnectionAttempts=10"
+ssh_cmd="ssh -p 22 ${ssh_opts}"
+alias ssh="${ssh_cmd}"
+alias scp="scp ${ssh_opts}"
+alias rsync="rsync -avz --rsync-path=\"sudo rsync\" -e \"${ssh_cmd}\""
+
+
+
 hap1="hap1"
 hap2="hap2"
 image="ubuntu:bionic"
@@ -44,6 +55,7 @@ containers[1]=hap2
 containers[2]=nginx
 for c in "${containers[@]}"; do
     sudo lxc launch ${image} ${c}
+    sudo apt-get install -y sshpass
 done
 
 sleep 10
@@ -52,15 +64,15 @@ cmds="
 "
 
 for c in "${containers[@]}"; do
-    sudo lxc exec ${c} -- sh -c "lsb_release -a || cat /etc/redhat-release";
-    sudo lxc exec ${c} -- sh -c "sed -i 's/^PermitRootLogin.*/PermitRootLogin yes/' /etc/ssh/sshd_config"
-    sudo lxc exec ${c} -- sh -c "systemctl restart ssh"
-    sudo lxc exec ${c} -- sh -c "ssh-keygen -f ~/.ssh/id_app -N ''"
+    sudo lxc exec ${c} -- lsb_release -a || cat /etc/redhat-release
+    sudo lxc exec ${c} -- sed -i 's/^PermitRootLogin.*/PermitRootLogin yes/' /etc/ssh/sshd_config
+    sudo lxc exec ${c} -- systemctl restart ssh
+    sudo lxc exec ${c} -- ssh-keygen -f ~/.ssh/id_app -N ''
     for ssh_host in "${containers[@]}"; do
 	if [ "${ssh_host}" != "${c}" ]; then
-	    sudo lxc exec ${c} -- sh -c "ping -c 2 ${ssh_host}"
-    	    sudo lxc exec ${c} -- sh -c "sshpass -p ${ssh_pass} ssh-copy-id -i ~/.ssh/id_ed25519 root@${ssh_host}"
-            sudo lxc exec ${c} -- sh -c "ssh root@${ssh_host} hostname"
+	    sudo lxc exec ${c} -- ping -c 2 ${ssh_host}
+    	    sudo lxc exec ${c} -- sshpass -p ${ssh_pass} ssh-copy-id -i ~/.ssh/id_ed25519 root@${ssh_host}
+            sudo lxc exec ${c} -- ssh root@${ssh_host} hostname
         fi
     done
 done
