@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # set -exo pipefail
-set -x
+# set -x
 
 ssh_opts="-o StrictHostKeyChecking=no \
     -o UserKnownHostsFile=/dev/null \
@@ -13,16 +13,42 @@ alias rsync="rsync -avz --rsync-path=\"sudo rsync\" -e \"${ssh_cmd}\""
 alias lxc_cmd="sudo lxc exec"
 
 
+i=0
+list="hap1 hap2 nginx"
+# list="
+# hap1
+# hap2
+# nginx
+# "
 
-hap1="hap1"
-hap2="hap2"
+# for c in "hap1, hap2, nginx"; do
+for c in $list; do
+    uid=$(uuid | cut -d'-' -f1)
+    containers[${i}]="${c}-${uid}"
+    i=$((i+1))
+done
+
+echo "Containers to create"
+for c in "${containers[@]}"; do
+  echo $c
+done
+
+    
+
+# containers[0]=${hap1}
+# containers[1]=${hap2}
+# containers[2]=${nginx}
+# uuid=$(uuidgen)
+#  uid=RandomStringUtils.randomAlphanumeric(8);
+# hap1="hap1_$(uuidgen)"
+# hap2="hap2_$(uuidgen)"
+# nginx="nginx_$(uuidgen)"
+
+# 
+# hap1="hap1"
+# hap2="hap2"
 image="ubuntu:bionic"
 ssh_pass="rootit"
-# uuid=$(uuidgen)
- #shortId = RandomStringUtils.randomAlphanumeric(8);
-hap1="hap1_$(uuidgen)"
-hap2="hap2_$(uuidgen)"
-nginx="nginx_$(uuidgen)"
 # CNAME2="centos"
 # image="images:centos/8"
 current_user=$(whoami)
@@ -31,6 +57,8 @@ sudo apt remove -y --purge lxd lxd-client;
 sudo snap install lxd --stable  # --edge
 sudo lxd waitready
 sudo lxd init --auto
+sleep 10
+sudo lxc list
 
 # sudo usermod --append --groups lxd "${current_user}"
 # sudo chmod 666 /var/snap/lxd/common/lxd/unix.socket;  # avoids need for sudo on read
@@ -53,9 +81,6 @@ sudo lxd init --auto
 # lxc list
 
 
-containers[0]=${hap1}
-containers[1]=${hap2}
-containers[2]=${nginx}
 for c in "${containers[@]}"; do
     sudo lxc launch ${image} ${c}
     sudo apt-get update
@@ -68,9 +93,10 @@ cmds="
 "
 
 for c in "${containers[@]}"; do
-    sudo lxc exec ${c} -- lsb_release -a || cat /etc/redhat-release
+    # sudo lxc exec ${c} -- lsb_release -a || cat /etc/redhat-release
+    sudo lxc exec ${c} -- lsb_release -a || cat /etc/*release
     sudo lxc exec ${c} -- sed -i 's/^PermitRootLogin.*/PermitRootLogin yes/' /etc/ssh/sshd_config
-    sudo lxcrexec ${c} -- systemctl restart ssh
+    sudo lxc exec ${c} -- systemctl restart ssh
     sudo lxc exec ${c} -- ssh-keygen -f ~/.ssh/id_app -N ''
     for ssh_host in "${containers[@]}"; do
 	if [ "${ssh_host}" != "${c}" ]; then
