@@ -82,7 +82,7 @@ for c in "${containers[@]}"; do
         sudo lxc file push -r osfiles ${c}/tmp/
         sudo lxc exec ${c} -- bash -c "ls -lat /tmp/"
         for ssh_host in "${containers[@]}"; do
-            if [[ ${c} == *"haproxy"* ]]; then
+            if [[ ${ssh_host} == *"haproxy"* ]]; then
                 sudo lxc exec ${c} -- bash -c "rsync ${rsync_opts} /tmp/osfiles/* root@${ssh_host}/"
     	        sudo lxc exec ${c} -- bash -c "ssh root@${ssh_host} systemctl restart haproxy"
 	        sudo lxc exec ${c} -- bash -c "ssh root@${ssh_host} cat /etc/keepalived/keepalived.conf | grep router"
@@ -90,10 +90,10 @@ for c in "${containers[@]}"; do
     	        sudo lxc exec ${c} -- bash -c "ssh root@${ssh_host} journalctl -n 100"
     	        sudo lxc exec ${c} -- bash -c "ssh root@${ssh_host} ip a"
             fi
-            if [[ ${c} == *"nginx"* ]]; then
+            if [[ ${ssh_host} == *"nginx"* ]]; then
                 sudo lxc exec ${c} -- bash -c "rsync ${rsync_opts} /tmp/osfiles/* root@${ssh_host}/"
     	        sudo lxc exec ${c} -- bash -c "ssh root@${ssh_host} systemctl restart nginx"
-    	        sudo lxc exec ${c} -- bash -c "ssh root@${ssh_host} eepalived"
+    	        sudo lxc exec ${c} -- bash -c "ssh root@${ssh_host} ss -lnt"
             fi
         done
     fi
