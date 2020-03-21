@@ -7,8 +7,10 @@ ssh_opts="-o StrictHostKeyChecking=no \
     -o ConnectionAttempts=10"
 ssh_cmd="ssh -p 22 ${ssh_opts}"
 alias ssh="${ssh_cmd}"
+alias ssh-copy-id="ssh-copy-id ${ssh_opts}"
 alias scp="scp ${ssh_opts}"
 alias rsync="rsync -avz --rsync-path=\"sudo rsync\" -e \"${ssh_cmd}\""
+alias lxc_cmd="sudo lxc exec"
 
 
 
@@ -56,7 +58,7 @@ containers[2]=nginx
 for c in "${containers[@]}"; do
     sudo lxc launch ${image} ${c}
     sudo apt-get update
-    sudo apt-get install -y sshpass
+    sudo apt-get install -y sshpass rsync
 done
 
 sleep 10
