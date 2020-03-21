@@ -50,7 +50,7 @@ for c in "${containers[@]}"; do
         sudo lxc launch ${haproxy_image} ${c}
         sleep 10
         sudo lxc exec ${c} -- bash -c "dnf install -y epel-release"  # needed for sshpass
-        sudo lxc exec ${c} -- bash -c "dnf install -y sudo sshpass rsync"
+        sudo lxc exec ${c} -- bash -c "dnf install -y sudo sshpass rsync openssh-server"
         # sudo lxc exec ${c} -- bash -c "sudo systemctl enable sshd"
         sudo lxc exec ${c} -- bash -c "sudo systemctl start sshd"
     else
@@ -58,7 +58,7 @@ for c in "${containers[@]}"; do
         # while true; do ping -c3 www.google.com > /dev/null && break; done
         sleep 10
         sudo lxc exec ${c} -- bash -c "sudo apt-get update"
-        sudo lxc exec ${c} -- bash -c "sudo apt-get install -y sshpass rsync openssh-server"
+        sudo lxc exec ${c} -- bash -c "sudo apt-get install -y sshpass rsync"
     fi
     sudo lxc exec ${c} -- bash -c "sudo echo 'root:${ssh_pass}' | chpasswd"
     sudo lxc exec ${c} -- lsb_release -a || cat /etc/*release
