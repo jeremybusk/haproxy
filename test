@@ -22,6 +22,8 @@ list="hap1 hap2 nginx"
 # "
 
 # for c in "hap1, hap2, nginx"; do
+sudo apt-get update
+sudo apt-get install -y uuid
 for c in $list; do
     uid=$(uuid | cut -d'-' -f1)
     containers[${i}]="${c}-${uid}"
