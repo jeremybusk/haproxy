@@ -25,9 +25,9 @@ names="client haproxy1 haproxy2 nginx"
 # containers[0]="${hap1}$_(uuid)"
 sudo apt-get update
 sudo apt-get install -y uuid
-uid=$(uuid | cut -d'-' -f1)
+cguid=$(uuid | cut -d'-' -f1)
 for c in $names; do
-    containers[${i}]="${c}-${uid}"
+    containers[${i}]="${c}-${cguid}"
     i=$((i+1))
 done
 echo "Containers to create."
@@ -104,7 +104,7 @@ for c in "${containers[@]}"; do
     	        sudo lxc exec ${c} -- bash -c "ssh root@${ssh_host} systemctl enable keepalived"
     	        sudo lxc exec ${c} -- bash -c "ssh root@${ssh_host} systemctl start keepalived"
                 sudo lxc exec ${c} -- bash -c "rsync -avz /tmp/osfiles/haproxy/* root@${ssh_host}:/"
-    	        sudo lxc exec ${c} -- bash -c "ssh root@${ssh_host} sed -i 's/127.0.0.127/nginx-${uuid}/g' /etc/haproxy/haproxy.cfg"
+    	        sudo lxc exec ${c} -- bash -c "ssh root@${ssh_host} sed -i 's/127.0.0.127/nginx-${cguid}/g' /etc/haproxy/haproxy.cfg"
     	        sudo lxc exec ${c} -- bash -c "ssh root@${ssh_host} haproxy -c -V -f /etc/haproxy/haproxy.cfg"
     	        sudo lxc exec ${c} -- bash -c "ssh root@${ssh_host} systemctl restart haproxy"
 		sleep 4
