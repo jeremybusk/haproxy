@@ -1,27 +1,2 @@
 #!/usr/bin/env bash
-set -exo pipefail
-CNAME="mytest"
-IMAGE="ubuntu:bionic"
-
-echo "Hello there"
-# snap install lxd --edge
-
-if [ ! -z ${LINT} ]; then echo "Hello, world!"; fi
-
-
-if [ ! -z ${IMAGE} ]; then   
-    sudo apt remove -y --purge lxd lxd-client;
-    sudo snap install lxd --stable;
-    sudo lxd waitready;
-    sudo lxd init --auto;
-    sudo chmod 666 /var/snap/lxd/common/lxd/unix.socket;
-    sudo lxc list
-fi
-if [ ! -z ${IMAGE} ]; then
-    lxc launch ${IMAGE} ${CNAME};
-    lxc exec ${CNAME} -- sh -c "lsb_release -a || cat /etc/redhat-release";
-fi
-echo "sleep 10"
-sleep 10
-# snap install lxd --stable
-lxc list
+echo Hello Deploy
