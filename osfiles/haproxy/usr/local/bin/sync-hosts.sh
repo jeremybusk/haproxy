@@ -6,7 +6,7 @@ host="10.64.5.232"
 ssh_port=22
 
 files=(
-    "/etc/haproxy/haproxy.cfg"
+    "/etc/haproxy"
     "/etc/keepalived/keepalived.conf"
     "/usr/local/bin/keepalived_notify.sh"
     "/usr/local/bin/chkha.sh"
@@ -17,8 +17,10 @@ function sync_files {
         echo $file
         # rsync -e "ssh -p ${ssh_port}" --update -raz --progress ${host}:/tmp2/* /tmp2/
         # rsync -e "ssh -p ${ssh_port}" --update -raz --progress /tmp2/* ${host}:/tmp2/
-        rsync -e "ssh -p ${ssh_port}" --update -raz --progress ${host}:${file} ${file}
-        rsync -e "ssh -p ${ssh_port}" --update -raz --progress ${file} ${host}:${file}
+        # rsync -e "ssh -p ${ssh_port}" --update -raz --progress ${host}:${file} ${file}
+        # rsync -e "ssh -p ${ssh_port}" --update -raz --progress ${file} ${host}:${file}
+        rsync -e "ssh -p ${ssh_port}" --relative --update -raz --progress ${host}:${file} /
+        rsync -e "ssh -p ${ssh_port}" --relative --update -raz --progress ${file} ${host}:/
     done
 }
 
