@@ -5,11 +5,11 @@
 host="10.64.5.232"
 ssh_port=22
 
+# You can include single file or directory below
 files=(
     "/etc/haproxy"
-    "/etc/keepalived/keepalived.conf"
-    "/usr/local/bin/keepalived_notify.sh"
-    "/usr/local/bin/chkha.sh"
+    "/etc/keepalived"
+    "/usr/local/bin"
 )
 
 function sync_files {
